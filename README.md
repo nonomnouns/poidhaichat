@@ -97,4 +97,7 @@ What is the address for jese.base.eth?
 - Degen L3
 
 
+## Additional Information
+If you are interested in hosting POIDH Graph, visit this repository https://github.com/nonomnouns/poidhgraph and read the README.
+
 
