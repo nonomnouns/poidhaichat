@@ -3,6 +3,7 @@
 import { useChat } from 'ai/react'
 import ReactMarkdown from 'react-markdown'
 import { BountyCreationWidget } from '@/components/createfrom'
+import { ClaimForm } from '@/components/claimform'
 import { ArrowUp } from 'lucide-react'
 import { useRef, useEffect, useState } from 'react'
 import { Textarea } from "@/components/ui/textarea"
@@ -12,6 +13,17 @@ import Sidebar from '@/components/sidebar'
 interface BountyToolResult {
   title: string
   description: string
+}
+
+interface ClaimToolResult {
+  bountyId: string
+  title: string
+  description: string
+  bountyData?: {
+    issuer: string
+    name: string
+    description: string
+  }
 }
 
 export default function Home() {
@@ -71,13 +83,10 @@ export default function Home() {
 
   return (
     <main className="min-h-screen relative flex">
-      <div 
-        className="fixed-background"
-      />
+      <div className="fixed-background" />
       
       <Sidebar />
 
-     
       {!isMobile && (
         <div className="fixed top-6 left-72 z-10">
           <h1 className="text-4xl font-bold text-[#615EFC]">poidhAI</h1>
@@ -91,24 +100,23 @@ export default function Home() {
               const bountyToolInvocation = m.toolInvocations?.find(
                 inv => inv.state === 'result' && inv.toolName === 'createBountyTool'
               )
+              const claimToolInvocation = m.toolInvocations?.find(
+                inv => inv.state === 'result' && inv.toolName === 'createClaimTool'
+              )
 
               return (
                 <div key={m.id} className="px-6">
                   {m.role === 'user' ? (
                     <div className="flex justify-end">
                       <div className="bg-[#615EFC] text-white rounded-2xl px-6 py-4 max-w-[90%] md:max-w-[80%] text-lg shadow-lg">
-                        <ReactMarkdown
-                          className="prose prose-invert max-w-none prose-lg"
-                        >
+                        <ReactMarkdown className="prose prose-invert max-w-none prose-lg">
                           {m.content}
                         </ReactMarkdown>
                       </div>
                     </div>
                   ) : (
                     <div className="pl-0 md:pl-6 max-w-[90%] md:max-w-[80%] text-lg">
-                      <ReactMarkdown
-                        className="prose prose-slate max-w-none prose-lg"
-                      >
+                      <ReactMarkdown className="prose prose-slate max-w-none prose-lg">
                         {m.content}
                       </ReactMarkdown>
 
@@ -120,6 +128,25 @@ export default function Home() {
                             ).result.title}
                             initialDescription={(
                               bountyToolInvocation as { result: BountyToolResult }
+                            ).result.description}
+                          />
+                        </div>
+                      )}
+
+                      {claimToolInvocation && (
+                        <div className="mt-6">
+                          <ClaimForm
+                            bountyId={(
+                              claimToolInvocation as { result: ClaimToolResult }
+                            ).result.bountyId}
+                            bountyData={(
+                              claimToolInvocation as { result: ClaimToolResult }
+                            ).result.bountyData}
+                            initialTitle={(
+                              claimToolInvocation as { result: ClaimToolResult }
+                            ).result.title}
+                            initialDescription={(
+                              claimToolInvocation as { result: ClaimToolResult }
                             ).result.description}
                           />
                         </div>

@@ -3,11 +3,12 @@ import { mistral } from '@ai-sdk/mistral';
 import { getAddressByBaseName } from '@/tools/basename';
 import { poidhKnowledgeTool } from '@/tools/knowlege';
 import { createBountyTool } from '@/tools/create-bounty';
-import {  bountyBaseTool   } from '@/tools/bountybase';
+import { bountyBaseTool } from '@/tools/bountybase';
 import { bountyDegenTool } from '@/tools/bountydegen';
 import { bountyArbitrumTool } from '@/tools/bountyARB';
 import { getDegenPriceTool } from '@/tools/get-degen-price';
 import { getEthPriceTool } from '@/tools/get-eth-price';
+import { createClaimTool } from '@/tools/create-claim';
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
@@ -16,55 +17,53 @@ export async function POST(req: Request) {
   You are a helpful AI assistant for POIDH (Pics Or It Didn't Happen).
   
   // Core Behavior
-  When user types ANY bounty request like:
-  "i want create bounty for ___"
-  "create bounty ___"
-  "create bounty for ___"
+  When user mentions ANYTHING about bounties or claims:
+  1. For bounty creation requests:
+     - Generate catchy title
+     - Create engaging description
+     Using ${createBountyTool}
   
-  AUTOMATICALLY:
-  1. Understand the core purpose
-  2. Generate catchy title
-  3. Create engaging description
-  Using ${createBountyTool}
+  2. For claim requests:
+     - Auto-detect bounty ID from context
+     - Generate claim title and description
+     - Guide user through proof submission
+     Using ${createClaimTool}
   
   // Smart Response
-  - Convert ANY user input into proper bounty format
+  - Convert ANY user input into proper format
   - Keep it simple but complete
   - Focus on user's main goal
   - Add fun elements when appropriate
   
-  // Reward Logic by eth currency  and degen - curate bounty title and description and think how much worth reward will be (if asked)
+  // Reward & Status Logic
   Quick check:
   ${getDegenPriceTool}
   ${getEthPriceTool}
   
-  // Status Check (if asked)
+  // Status Check
   Use:
   ${bountyBaseTool}
   ${bountyDegenTool}
   ${bountyArbitrumTool}
   
-  // POIDH Knowledge (if needed)
+  // POIDH Knowledge
   ${poidhKnowledgeTool}
   
-  Keep everything simple, direct, and effective.
-  Turn ANY idea into a proper bounty format.
-
-
-
-
-  // Bounty Data result (if needed)
-  if user ask for bounty data like:
-  "show me recomended 1 bounty active on ___"
-  "what bounty active on ___ with reward ___"
-  "show me bounty ___"
-  Use:
+  // Bounty Data Handling
+  For queries like "show bounty ___":
+  1. Auto-compile data from all sources
+  2. Show active bounties with rewards
+  3. Enable easy claim submission
+  Using:
   ${bountyBaseTool}
   ${bountyDegenTool}
   ${bountyArbitrumTool}
 
-  please summarize the bounty data you get from above tools. 
-  
+  When user wants to claim a bounty:
+  1. Verify bounty exists and is active
+  2. Auto-populate claim form with context
+  3. Guide through proof submission
+  4. Provide claim status link after submission
   `;
 
   const result = await streamText({
@@ -75,6 +74,7 @@ export async function POST(req: Request) {
       getAddressByBaseName,
       poidhKnowledgeTool,
       createBountyTool,
+      createClaimTool,
       bountyBaseTool,
       bountyDegenTool,
       bountyArbitrumTool,
@@ -82,6 +82,8 @@ export async function POST(req: Request) {
       getEthPriceTool
     },
     maxSteps: 5,
+    maxTokens: 1000,
+    temperature: 0.7
   });
 
   return result.toDataStreamResponse();
